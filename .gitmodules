@@ -1,3 +1,6 @@
 [submodule "StyleAnime"]
 	path = StyleAnime
 	url = https://github.com/zsl2018/StyleAnime
+[submodule "face-parsing.PyTorch"]
+	path = face-parsing.PyTorch
+	url = https://github.com/zllrunning/face-parsing.PyTorch
