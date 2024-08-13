@@ -44,9 +44,10 @@ class SDXLModel:
         )
 
         self.unet.add_adapter(self.lora_config)
+        self.configure_optimization_scheme()
 
     def encode_text(self, prompt: str | List[str]) -> torch.Tensor:
-        tokens = self.text_tokenizer(prompt, return_tensors='pt', padding='True')
+        tokens = self.text_tokenizer(prompt, return_tensors='pt', padding='True').to('cuda')
         return self.text_encoder(tokens.input_ids, return_dict=False)[0]
 
     def encode_image_to_latent(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -59,3 +60,50 @@ class SDXLModel:
         """
         latent_dist = self.vae.encode(x).latent_dist
         return latent_dist.sample(), latent_dist.kl()
+
+    def add_noise(self, z: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Add random Gaussian noise to the latent codes
+        Inputs:
+        - `z`: the latent code
+        Returns:
+        - A tuple containing 3 objects of type torch.Tensor: the noised latent code, the timestep tensor and the noise
+        """
+        timesteps = torch.randint(
+            0, self.noise_scheduler.config.num_train_timesteps, (z.shape[0],), device=z.device
+        ).long()
+        noise = torch.randn_like(z)
+        return self.noise_scheduler.add_noise(z, noise, timesteps), timesteps
+
+    def calculate_loss(self, noise: torch.Tensor, predicted_noise: torch.Tensor):
+        """
+        Calculate the noise prediction loss of the model
+        """
+        return torch.nn.functional.mse_loss(predicted_noise, noise)
+
+    def forward(self, images: torch.Tensor, prompts: List[str]) -> torch.Tensor:
+        """
+        Performs one forward pass
+        Inputs:
+        - images: the images, scaled to (0, 1). A torch.Tensor with shape [B, C, H, W]
+        - prompts: prompts of the images. A list of strings.
+        Returns:
+        - The noise prediction loss of the Unet.
+        """
+        latent = self.encode_image_to_latent(images)
+        conditioning = self.encode_text(prompts)
+
+        noised_latent, timesteps, noise = self.add_noise(latent)
+        predicted_noise = self.unet.forward(
+            noised_latent, timesteps, encoder_hidden_states=conditioning, return_dict=False
+        )[0]
+
+        return self.calculate_loss(noise, predicted_noise)
+
+    def configure_optimization_scheme(self):
+        pass
+
+    def configure_datalaoder(self):
+        pass
+
+    def finetune(self):
+        pass
