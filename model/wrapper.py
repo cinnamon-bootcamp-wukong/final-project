@@ -187,6 +187,7 @@ class SDXLModel:
         )
 
         task = pbar.add_task("", total=len(dataloader), loss=0.0)
+        pbar.start()
         for img, prompts in dataloader:
             img = img.cuda()
 
@@ -206,6 +207,7 @@ class SDXLModel:
             os.mkdir("checkpoints")
         self.unet.save_pretrained("checkpoints")
         print("Checkpoint saved")
+        pbar.stop()
 
     def finetune(
         self,
