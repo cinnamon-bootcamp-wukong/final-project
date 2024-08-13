@@ -121,7 +121,8 @@ class SDXLModel:
         lr: float = 1e-5,
         betas: Tuple[float, float] = (0.9, 0.99),
         weight_decay: float = 0.05,
-        lr_scheduler: torch.optim.lr_scheduler.LRScheduler | None = None,
+        lr_scheduler: Callable[..., torch.optim.lr_scheduler.LRScheduler] | None = None,
+        **lr_scheduler_kwargs,
     ):
         """
         Configure the optimizer for the model (particularly the unet). The `optimizer` attribute will be created/updated.
@@ -147,7 +148,7 @@ class SDXLModel:
                 self.optimizer, T_max=4000, eta_min=lr / 10
             )
         else:
-            self.lr_scheduler = lr_scheduler
+            self.lr_scheduler = lr_scheduler(self.optimizer, **lr_scheduler_kwargs)
 
     def configure_dataloader(
         self,
