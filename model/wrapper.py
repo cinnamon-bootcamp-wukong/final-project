@@ -89,7 +89,7 @@ class SDXLModel:
         Returns:
         - The noise prediction loss of the Unet.
         """
-        latent = self.encode_image_to_latent(images)
+        latent, kl = self.encode_image_to_latent(images)
         conditioning = self.encode_text(prompts)
 
         noised_latent, timesteps, noise = self.add_noise(latent)
