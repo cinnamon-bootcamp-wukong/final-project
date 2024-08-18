@@ -1,6 +1,6 @@
 model:
   model_name_or_path: Linaqruf/animagine-xl-3.0
-  lora_r: 8
+  lora_rank: 8
   lora_alpha: 32
 data:
   parquet_file: /home/wukong-team/datasets/captions.parquet

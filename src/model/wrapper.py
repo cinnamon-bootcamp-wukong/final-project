@@ -31,7 +31,7 @@ class SDXLModel:
         The wrapper class for Stable Diffusion XL model, which can be finetuned using LoRA.
         """
         self.pipeline = StableDiffusionXLImg2ImgPipeline.from_pretrained(
-            model_name_or_path, torch_dtype=torch.bfloat16, device='cuda'
+            model_name_or_path, torch_dtype=torch.float16, device='cuda'
         )
         print(self.pipeline.unet)
 
@@ -171,7 +171,7 @@ class SDXLModel:
         """
         return torch.utils.data.DataLoader(dataset, batch_size, shuffle=train, drop_last=drop_last)
 
-    @torch.cuda.amp.autocast(dtype=torch.bfloat16)
+    @torch.cuda.amp.autocast(dtype=torch.float16)
     def train_1epoch(self, dataloader: torch.utils.data.DataLoader, epoch: int, total_epochs: int):
         print = self.console.print
         losses = []
