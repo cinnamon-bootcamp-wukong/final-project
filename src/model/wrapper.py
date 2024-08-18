@@ -30,15 +30,17 @@ class SDXLModel:
         """
         The wrapper class for Stable Diffusion XL model, which can be finetuned using LoRA.
         """
-        self.pipeline = StableDiffusionXLImg2ImgPipeline.from_pretrained(
-            model_name_or_path, torch_dtype=torch.float16
-        ).to('cuda')
+        self.pipeline: StableDiffusionXLImg2ImgPipeline = (
+            StableDiffusionXLImg2ImgPipeline.from_pretrained(
+                model_name_or_path, torch_dtype=torch.float16
+            ).to('cuda')
+        )
 
         # SD components
         self.unet: UNet2DConditionModel = self.pipeline.unet
         self.vae: AutoencoderKL = self.pipeline.vae
         self.vae.force_upcast = False
-        self.text_encoder: CLIPTextModel = self.pipeline.text_encoder
+
         self.text_tokenizer: CLIPTokenizer = self.pipeline.tokenizer
 
         self.noise_scheduler: EulerDiscreteScheduler = self.pipeline.scheduler
@@ -59,9 +61,11 @@ class SDXLModel:
         self.configure_optimization_scheme()
         self.console = Console()
 
-    def encode_text(self, prompt: str | List[str]) -> torch.Tensor:
-        tokens = self.text_tokenizer(prompt, return_tensors='pt', padding=True).to('cuda')
-        return self.text_encoder(tokens.input_ids, return_dict=False)[0]
+    def encode_text(self, prompt: str | List[str]) -> Tuple[torch.Tensor, torch.Tensor]:
+        embeds, negative_embeds, added_embeds, negative_added_embeds = self.pipeline.encode_prompt(
+            prompt
+        )
+        return embeds, added_embeds
 
     def encode_image_to_latent(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """Encode images to latent codes using the VAE
@@ -105,11 +109,23 @@ class SDXLModel:
             `loss`: The noise prediction loss of the Unet.
         """
         latent, kl = self.encode_image_to_latent(images)
-        conditioning = self.encode_text(prompts)
+        conditioning, add_text_embed = self.encode_text(prompts)
+
+        add_time_ids, _ = self.pipeline._get_add_time_ids(
+            (256, 256),
+            (0, 0),
+            (256, 256),
+            dtype=conditioning.dtype,
+            text_encoder_projection_dim=self.pipeline.text_encoder_2.config.projection_dim,
+        )
 
         noised_latent, timesteps, noise = self.add_noise(latent)
         predicted_noise = self.unet.forward(
-            noised_latent, timesteps, encoder_hidden_states=conditioning, return_dict=False
+            noised_latent,
+            timesteps,
+            encoder_hidden_states=conditioning,
+            return_dict=False,
+            added_cond_kwargs={'text_embeds': add_text_embed, 'text_time': add_time_ids},
         )[0]
 
         return self.calculate_loss(noise, predicted_noise)
