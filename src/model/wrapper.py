@@ -118,6 +118,7 @@ class SDXLModel:
             2.5,
             (256, 256),
             (0, 0),
+            (256, 256),
             dtype=conditioning.dtype,
             text_encoder_projection_dim=self.pipeline.text_encoder_2.config.projection_dim,
         )
