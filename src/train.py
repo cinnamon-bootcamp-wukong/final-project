@@ -4,7 +4,7 @@ from model import SDXLModel
 import yaml
 
 with open("training_configs.yaml") as file:
-    cfg = yaml.load(file, yaml.loader.SafeLoader(file))
+    cfg = yaml.load(file, yaml.loader.SafeLoader)
 
 
 model = SDXLModel(**cfg["model"])
