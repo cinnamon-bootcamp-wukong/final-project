@@ -3,7 +3,7 @@ model:
   lora_rank: 8
   lora_alpha: 32
 data:
-  parquet_file: /home/wukong-team/datasets/captions.parquet
+  parquet_file: /home/wukong-team/datasets/captions_2.parquet
   batch_size: 8
   drop_last: false
 epochs: 10

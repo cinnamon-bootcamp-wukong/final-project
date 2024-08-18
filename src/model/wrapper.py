@@ -41,14 +41,13 @@ class SDXLModel:
         self.vae: AutoencoderKL = self.pipeline.vae
         self.vae.force_upcast = False
 
-        self.text_tokenizer: CLIPTokenizer = self.pipeline.tokenizer
-
         self.noise_scheduler: EulerDiscreteScheduler = self.pipeline.scheduler
 
         # freeze all components and prepare for lora
         self.unet.requires_grad_(False)
         self.vae.requires_grad_(False)
-        self.text_encoder.requires_grad_(False)
+        self.pipeline.text_encoder.requires_grad_(False)
+        self.pipeline.text_encoder_2.requires_grad_(False)
 
         self.lora_config = LoraConfig(
             r=lora_rank,
@@ -115,6 +114,10 @@ class SDXLModel:
             (256, 256),
             (0, 0),
             (256, 256),
+            6.0,
+            2.5,
+            (256, 256),
+            (0, 0),
             dtype=conditioning.dtype,
             text_encoder_projection_dim=self.pipeline.text_encoder_2.config.projection_dim,
         )
@@ -206,6 +209,7 @@ class SDXLModel:
         pbar.start()
         for img, prompts in dataloader:
             img = img.cuda()
+            prompts = list(prompts)
 
             self.optimizer.zero_grad()
 
