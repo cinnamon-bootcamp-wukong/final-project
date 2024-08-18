@@ -9,7 +9,7 @@ from typing import Tuple
 class AnimePortaraitsDataset(Dataset):
     def __init__(self, parquet_file: str) -> None:
         super().__init__()
-        self.imageSize = 512
+        self.imageSize = 256
         self.transform = T.Compose(
             [
                 T.Resize(self.imageSize),
