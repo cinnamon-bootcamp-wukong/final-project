@@ -4,6 +4,7 @@ from diffusers import StableDiffusionXLImg2ImgPipeline, AutoencoderKL, EulerDisc
 import torch.utils.data.dataloader
 from transformers import CLIPTextModel, CLIPTokenizer
 from diffusers.models.unets.unet_2d_condition import UNet2DConditionModel
+from diffusers.training_utils import cast_training_params
 from peft import LoraConfig
 
 from typing import List, Tuple, Callable
@@ -57,6 +58,7 @@ class SDXLModel:
         )
 
         self.unet.add_adapter(self.lora_config)
+        cast_training_params(self.unet)
         self.configure_optimization_scheme()
         self.console = Console()
 
