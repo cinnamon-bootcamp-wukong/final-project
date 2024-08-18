@@ -219,7 +219,7 @@ class SDXLModel:
     ):
         dataloader = self.configure_dataloader(dataset, batch_size=batch_size, drop_last=drop_last)
         for i in range(epochs):
-            self.train_1epoch(self, dataloader, i, epochs)
+            self.train_1epoch(dataloader, i, epochs)
 
     def img2img(self, image: Image.Image, prompt: str, strength: float):
         self.pipeline.__call__(prompt, image, strength=strength)
