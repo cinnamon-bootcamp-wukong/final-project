@@ -31,9 +31,8 @@ class SDXLModel:
         The wrapper class for Stable Diffusion XL model, which can be finetuned using LoRA.
         """
         self.pipeline = StableDiffusionXLImg2ImgPipeline.from_pretrained(
-            model_name_or_path, torch_dtype=torch.float16, device='cuda'
-        )
-        print(self.pipeline.unet)
+            model_name_or_path, torch_dtype=torch.float16
+        ).to('cuda')
 
         # SD components
         self.unet: UNet2DConditionModel = self.pipeline.unet
@@ -61,7 +60,7 @@ class SDXLModel:
         self.console = Console()
 
     def encode_text(self, prompt: str | List[str]) -> torch.Tensor:
-        tokens = self.text_tokenizer(prompt, return_tensors='pt', padding='True').to('cuda')
+        tokens = self.text_tokenizer(prompt, return_tensors='pt', padding=True).to('cuda')
         return self.text_encoder(tokens.input_ids, return_dict=False)[0]
 
     def encode_image_to_latent(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -176,7 +175,7 @@ class SDXLModel:
         print = self.console.print
         losses = []
         pbar = Progress(
-            TextColumn(f"[green]Epoch{epoch}/{total_epochs}"),
+            TextColumn(f"[green]Epoch {epoch}/{total_epochs}"),
             BarColumn(),
             MofNCompleteColumn(),
             TimeElapsedColumn(),
