@@ -151,7 +151,7 @@ class SDXLModel:
             return_dict=False,
             added_cond_kwargs={
                 'text_embeds': add_text_embed.cuda(),
-                'text_time': add_time_ids.cuda(),
+                'time_ids': add_time_ids.cuda(),
             },
         )[0]
 
