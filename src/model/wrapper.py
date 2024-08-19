@@ -266,5 +266,5 @@ class SDXLModel:
         for i in range(epochs):
             self.train_1epoch(dataloader, i, epochs)
 
-    def img2img(self, image: Image.Image, prompt: str, strength: float):
-        self.pipeline.__call__(prompt, image, strength=strength)
+    def img2img(self, image: Image.Image, prompt: str, strength: float, **pipeline_kwargs):
+        self.pipeline.__call__(prompt, image, strength=strength, **pipeline_kwargs)
