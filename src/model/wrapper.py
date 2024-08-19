@@ -27,6 +27,7 @@ class SDXLModel:
     def __init__(
         self,
         model_name_or_path: str = 'Linaqruf/animagine-xl-3.0',
+        lora_weights: str = None,
         lora_rank: int = 8,
         lora_alpha: int = 32,
     ):
@@ -35,6 +36,7 @@ class SDXLModel:
 
         Parameters:
             `model_name_or_path`: A model name available on HF Hub or a path to a local HF model checkpoint.
+            `lora_weights`: the path to a pre-trained LoRA weights if available
             `lora_rank`: LoRA rank to apply
             `lora_alpha`: LoRA alpha to apply
         """
@@ -66,6 +68,8 @@ class SDXLModel:
 
         self.unet.add_adapter(self.lora_config)
         cast_training_params(self.unet)
+        if lora_weights:
+            self.pipeline.load_lora_weights(lora_weights)
         self.configure_optimization_scheme()
         self.console = Console()
 
