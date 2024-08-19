@@ -7,7 +7,7 @@ from typing import Tuple
 
 
 class AnimePortaraitsDataset(Dataset):
-    def __init__(self, parquet_file: str) -> None:
+    def __init__(self, parquet_file: str, train:bool=True) -> None:
         super().__init__()
         self.imageSize = 256
         self.transform = T.Compose(
@@ -17,6 +17,10 @@ class AnimePortaraitsDataset(Dataset):
             ]
         )
         self.data = pd.read_parquet(parquet_file)
+        if train:
+            self.data = self.data[:20000]
+        else:
+            self.data = self.data[20000:]
 
     def __len__(self):
         return len(self.data)

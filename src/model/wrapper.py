@@ -59,17 +59,19 @@ class SDXLModel:
         self.pipeline.text_encoder.requires_grad_(False)
         self.pipeline.text_encoder_2.requires_grad_(False)
 
-        self.lora_config = LoraConfig(
-            r=lora_rank,
-            lora_alpha=lora_alpha,
-            init_lora_weights="gaussian",
-            target_modules=["to_k", "to_q", "to_v", "to_out.0"],
-        )
-
-        self.unet.add_adapter(self.lora_config)
-        cast_training_params(self.unet)
         if lora_weights:
             self.pipeline.load_lora_weights(lora_weights)
+        else:
+            self.lora_config = LoraConfig(
+                r=lora_rank,
+                lora_alpha=lora_alpha,
+                init_lora_weights="gaussian",
+                target_modules=["to_k", "to_q", "to_v", "to_out.0"],
+            )
+
+            self.unet.add_adapter(self.lora_config)
+        cast_training_params(self.unet)
+            
         self.configure_optimization_scheme()
         self.console = Console()
 
@@ -227,6 +229,18 @@ class SDXLModel:
         """
         return torch.utils.data.DataLoader(dataset, batch_size, shuffle=train, drop_last=drop_last)
 
+
+    def save_checkpoint(self):
+        print = self.console.print
+        print("Saving checkpoint...")
+        if not os.path.isdir("checkpoints"):
+            os.mkdir("checkpoints")
+        self.pipeline.save_lora_weights(
+            "checkpoints", convert_state_dict_to_diffusers(get_peft_model_state_dict(self.unet))
+        )
+        print("Checkpoint saved")
+        
+
     @torch.cuda.amp.autocast(dtype=torch.float16)
     def train_1epoch(self, dataloader: torch.utils.data.DataLoader, epoch: int, total_epochs: int):
         """Helper method for training for 1 epoch"""
@@ -261,18 +275,47 @@ class SDXLModel:
             pbar.update(task, advance=1, loss=loss.item())
 
         print(f"Epoch {epoch}, average loss = {sum(losses) / len(losses)}.")
-        print("Saving checkpoint...")
-        if not os.path.isdir("checkpoints"):
-            os.mkdir("checkpoints")
-        self.pipeline.save_lora_weights(
-            "checkpoints", convert_state_dict_to_diffusers(get_peft_model_state_dict(self.unet))
-        )
-        print("Checkpoint saved")
         pbar.stop()
+
+    @torch.cuda.amp.autocast(dtype=torch.float16)
+    @torch.no_grad()
+    def eval(self, dataloader: torch.utils.data.DataLoader, epoch: int, total_epochs: int):
+        """Helper method for evaluating"""
+        print = self.console.print
+        losses = []
+        pbar = Progress(
+            TextColumn(f"[green]Evaluating, epoch {epoch}/{total_epochs}"),
+            BarColumn(),
+            MofNCompleteColumn(),
+            TimeElapsedColumn(),
+            TextColumn("||"),
+            TimeRemainingColumn(),
+            TextColumn("loss = {task.fields[loss]:.4}"),
+            console=self.console,
+            transient=True,
+        )
+
+        task = pbar.add_task("", total=len(dataloader), loss=0.0)
+        pbar.start()
+        for img, prompts in dataloader:
+            img = img.cuda()
+            prompts = list(prompts)
+
+            self.optimizer.zero_grad()
+
+            loss = self.forward(img, prompts)
+
+            losses.append(loss.item())
+            pbar.update(task, advance=1, loss=loss.item())
+        avg = sum(losses) / len(losses)
+        print(f"Epoch {epoch}, average val loss = {avg}.")
+        pbar.stop()
+        return avg
 
     def finetune(
         self,
-        dataset: torch.utils.data.Dataset,
+        train_dataset: torch.utils.data.Dataset,
+        val_dataset: torch.utils.data.Dataset,
         batch_size: int = 4,
         drop_last: bool = False,
         epochs: int = 5,
@@ -286,11 +329,18 @@ class SDXLModel:
             `drop_last`: if you want to drop the last batch for each epoch. Useful when used with `torch.compile` where usually static computation graphs are used.
             `epochs`: number of epochs to train
         """
-        dataloader = self.configure_dataloader(dataset, batch_size=batch_size, drop_last=drop_last)
+        loss_min = 99.
+        train_dataloader = self.configure_dataloader(train_dataset, batch_size=batch_size, drop_last=drop_last)
+        val_dataloader = self.configure_dataloader(val_dataset, batch_size=batch_size, drop_last=drop_last, train=False)
         for i in range(epochs):
-            self.train_1epoch(dataloader, i, epochs)
+            self.train_1epoch(train_dataloader, i, epochs)
+            loss = self.eval(val_dataloader, i, epochs)
+            if loss < loss_min:
+                loss = loss_min
+                self.save_checkpoint()
 
-    def img2img(self, image: Image.Image, prompt: str, strength: float, **pipeline_kwargs):
+
+    def img2img(self, image: Image.Image, prompt: str, strength: float, **pipeline_kwargs) -> Image.Image:
         """
         Image modification using SDXL
 
@@ -305,4 +355,5 @@ class SDXLModel:
         Returns:
             A PIL `Image`, the modifucation result.
         """
-        self.pipeline.__call__(prompt, image, strength=strength, **pipeline_kwargs)
+        x = self.pipeline.__call__(prompt, image=image, strength=strength, **pipeline_kwargs, return_dict=False)
+        return x[0][0]

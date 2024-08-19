@@ -1,9 +1,10 @@
 model:
   model_name_or_path: Linaqruf/animagine-xl-3.0
+  lora_weights: checkpoints
   lora_rank: 8
   lora_alpha: 32
 data:
   parquet_file: /home/wukong-team/datasets/captions_2.parquet
   batch_size: 8
   drop_last: false
-epochs: 10
+epochs: 50
