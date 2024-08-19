@@ -30,6 +30,11 @@ class SDXLModel:
     ):
         """
         The wrapper class for Stable Diffusion XL model, which can be finetuned using LoRA.
+
+        Parameters:
+            `model_name_or_path`: A model name available on HF Hub or a path to a local HF model checkpoint.
+            `lora_rank`: LoRA rank to apply
+            `lora_alpha`: LoRA alpha to apply
         """
         self.pipeline: StableDiffusionXLImg2ImgPipeline = (
             StableDiffusionXLImg2ImgPipeline.from_pretrained(
@@ -63,6 +68,7 @@ class SDXLModel:
         self.console = Console()
 
     def encode_text(self, prompt: str | List[str]) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Encode the prompts using the model text encoders."""
         prompt_embeds_list = []
         text_encoders = [self.pipeline.text_encoder, self.pipeline.text_encoder_2]
         tokenizers = [self.pipeline.tokenizer, self.pipeline.tokenizer_2]
@@ -217,6 +223,7 @@ class SDXLModel:
 
     @torch.cuda.amp.autocast(dtype=torch.float16)
     def train_1epoch(self, dataloader: torch.utils.data.DataLoader, epoch: int, total_epochs: int):
+        """Helper method for training for 1 epoch"""
         print = self.console.print
         losses = []
         pbar = Progress(
@@ -262,9 +269,32 @@ class SDXLModel:
         drop_last: bool = False,
         epochs: int = 5,
     ):
+        """
+        Fine-tune the model with LoRA
+
+        Parameters:
+            `dataset`: an object of any classes inherited from `torch.utils.data.Dataset`. The dataset must return two things when called: an image, and its prompt (caption).
+            `batch_size`: training batch size
+            `drop_last`: if you want to drop the last batch for each epoch. Useful when used with `torch.compile` where usually static computation graphs are used.
+            `epochs`: number of epochs to train
+        """
         dataloader = self.configure_dataloader(dataset, batch_size=batch_size, drop_last=drop_last)
         for i in range(epochs):
             self.train_1epoch(dataloader, i, epochs)
 
     def img2img(self, image: Image.Image, prompt: str, strength: float, **pipeline_kwargs):
+        """
+        Image modification using SDXL
+
+        All arguments should be compliant with `StableDiffusionXLImg2ImgPipeline.__call__`.
+
+        Parameters:
+            `image`: the original image to modify
+            `prompt`: how to modify the image
+            `strength`: how the modified result should differ from the original, float with value of range [0, 1]
+            `pipeline_kwargs`: any other keyword argument accepted by `StableDiffusionXLImg2ImgPipeline.__call__`
+
+        Returns:
+            A PIL `Image`, the modifucation result.
+        """
         self.pipeline.__call__(prompt, image, strength=strength, **pipeline_kwargs)
