@@ -4,6 +4,7 @@ from diffusers import StableDiffusionXLImg2ImgPipeline, AutoencoderKL, EulerDisc
 import torch.utils.data.dataloader
 from transformers import CLIPTextModel, CLIPTokenizer
 from diffusers.models.unets.unet_2d_condition import UNet2DConditionModel
+from diffusers.training_utils import cast_training_params
 from peft import LoraConfig
 
 from typing import List, Tuple, Callable
@@ -57,14 +58,46 @@ class SDXLModel:
         )
 
         self.unet.add_adapter(self.lora_config)
+        cast_training_params(self.unet)
         self.configure_optimization_scheme()
         self.console = Console()
 
     def encode_text(self, prompt: str | List[str]) -> Tuple[torch.Tensor, torch.Tensor]:
-        embeds, negative_embeds, added_embeds, negative_added_embeds = self.pipeline.encode_prompt(
-            prompt
-        )
-        return embeds, added_embeds
+        prompt_embeds_list = []
+        text_encoders = [self.pipeline.text_encoder, self.pipeline.text_encoder_2]
+        tokenizers = [self.pipeline.tokenizer, self.pipeline.tokenizer_2]
+        for i, text_encoder in enumerate(text_encoders):
+            tokenizer = tokenizers[i]
+            text_input_ids = tokenizer(
+                prompt,
+                padding='max_length',
+                max_length=tokenizer.model_max_length,
+                return_tensors='pt',
+                truncation=True,
+            ).input_ids
+
+            prompt_embeds = text_encoder(
+                text_input_ids.to(text_encoder.device), output_hidden_states=True, return_dict=False
+            )
+
+            # We are only ALWAYS interested in the pooled output of the final text encoder
+            pooled_prompt_embeds = prompt_embeds[0]
+            prompt_embeds = prompt_embeds[-1][-2]
+            bs_embed, seq_len, _ = prompt_embeds.shape
+            prompt_embeds = prompt_embeds.view(bs_embed, seq_len, -1)
+            prompt_embeds_list.append(prompt_embeds)
+
+        prompt_embeds = torch.concat(prompt_embeds_list, dim=-1)
+        pooled_prompt_embeds = pooled_prompt_embeds.view(bs_embed, -1)
+        return prompt_embeds, pooled_prompt_embeds
+
+    @staticmethod
+    def compute_time_ids(original_size=(256, 256), crops_coords_top_left=(0, 0)):
+        # Adapted from pipeline.StableDiffusionXLPipeline._get_add_time_ids
+        target_size = (256, 256)
+        add_time_ids = list(original_size + crops_coords_top_left + target_size)
+        add_time_ids = torch.tensor([add_time_ids])
+        return add_time_ids
 
     def encode_image_to_latent(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """Encode images to latent codes using the VAE
@@ -75,7 +108,7 @@ class SDXLModel:
             `out`: A tuple containing two objects of type torch.Tensor: the sampled latent code and the KL divergence
         """
         latent_dist = self.vae.encode(x).latent_dist
-        return latent_dist.sample(), latent_dist.kl()
+        return latent_dist.sample() * self.vae.config.scaling_factor, latent_dist.kl()
 
     def add_noise(self, z: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Add random Gaussian noise to the latent codes
@@ -110,26 +143,18 @@ class SDXLModel:
         latent, kl = self.encode_image_to_latent(images)
         conditioning, add_text_embed = self.encode_text(prompts)
 
-        add_time_ids, _ = self.pipeline._get_add_time_ids(
-            (256, 256),
-            (0, 0),
-            (256, 256),
-            6.0,
-            2.5,
-            (256, 256),
-            (0, 0),
-            (256, 256),
-            dtype=conditioning.dtype,
-            text_encoder_projection_dim=self.pipeline.text_encoder_2.config.projection_dim,
-        )
+        add_time_ids = torch.cat([self.compute_time_ids()] * images.shape[0])
 
         noised_latent, timesteps, noise = self.add_noise(latent)
         predicted_noise = self.unet.forward(
             noised_latent,
             timesteps,
-            encoder_hidden_states=conditioning,
+            encoder_hidden_states=conditioning.cuda(),
             return_dict=False,
-            added_cond_kwargs={'text_embeds': add_text_embed, 'text_time': add_time_ids},
+            added_cond_kwargs={
+                'text_embeds': add_text_embed.cuda(),
+                'time_ids': add_time_ids.cuda(),
+            },
         )[0]
 
         return self.calculate_loss(noise, predicted_noise)
@@ -241,5 +266,5 @@ class SDXLModel:
         for i in range(epochs):
             self.train_1epoch(dataloader, i, epochs)
 
-    def img2img(self, image: Image.Image, prompt: str, strength: float):
-        self.pipeline.__call__(prompt, image, strength=strength)
+    def img2img(self, image: Image.Image, prompt: str, strength: float, **pipeline_kwargs):
+        self.pipeline.__call__(prompt, image, strength=strength, **pipeline_kwargs)
