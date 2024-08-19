@@ -5,7 +5,9 @@ import torch.utils.data.dataloader
 from transformers import CLIPTextModel, CLIPTokenizer
 from diffusers.models.unets.unet_2d_condition import UNet2DConditionModel
 from diffusers.training_utils import cast_training_params
+from diffusers.utils import convert_state_dict_to_diffusers
 from peft import LoraConfig
+from peft.utils import get_peft_model_state_dict
 
 from typing import List, Tuple, Callable
 from rich.progress import (
@@ -25,6 +27,7 @@ class SDXLModel:
     def __init__(
         self,
         model_name_or_path: str = 'Linaqruf/animagine-xl-3.0',
+        lora_weights: str = None,
         lora_rank: int = 8,
         lora_alpha: int = 32,
     ):
@@ -33,6 +36,7 @@ class SDXLModel:
 
         Parameters:
             `model_name_or_path`: A model name available on HF Hub or a path to a local HF model checkpoint.
+            `lora_weights`: the path to a pre-trained LoRA weights if available
             `lora_rank`: LoRA rank to apply
             `lora_alpha`: LoRA alpha to apply
         """
@@ -64,6 +68,8 @@ class SDXLModel:
 
         self.unet.add_adapter(self.lora_config)
         cast_training_params(self.unet)
+        if lora_weights:
+            self.pipeline.load_lora_weights(lora_weights)
         self.configure_optimization_scheme()
         self.console = Console()
 
@@ -168,7 +174,7 @@ class SDXLModel:
     def configure_optimization_scheme(
         self,
         optimizer_class: Callable[..., torch.optim.Optimizer] = torch.optim.AdamW,
-        lr: float = 1e-5,
+        lr: float = 1e-6,
         betas: Tuple[float, float] = (0.9, 0.99),
         weight_decay: float = 0.05,
         lr_scheduler: Callable[..., torch.optim.lr_scheduler.LRScheduler] | None = None,
@@ -195,7 +201,7 @@ class SDXLModel:
             )
         if lr_scheduler is None:
             self.lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-                self.optimizer, T_max=4000, eta_min=lr / 10
+                self.optimizer, T_max=4000, eta_min=lr / 5
             )
         else:
             self.lr_scheduler = lr_scheduler(self.optimizer, **lr_scheduler_kwargs)
@@ -258,7 +264,9 @@ class SDXLModel:
         print("Saving checkpoint...")
         if not os.path.isdir("checkpoints"):
             os.mkdir("checkpoints")
-        self.unet.save_pretrained("checkpoints")
+        self.pipeline.save_lora_weights(
+            "checkpoints", convert_state_dict_to_diffusers(get_peft_model_state_dict(self.unet))
+        )
         print("Checkpoint saved")
         pbar.stop()
 
