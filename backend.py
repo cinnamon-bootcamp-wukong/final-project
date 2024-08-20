@@ -28,54 +28,41 @@ async def real2anime(file: UploadFile, option_json: str = Form(...)):
     # Load the options from the provided JSON string
     options = json.loads(option_json)
 
-    prompt = "best_quality"
-    if options.get('age') is not None: 
-        prompt += ", " + options['age']
+    prompt = "masterpiece, best_quality"
     if options.get('gender') is not None: 
         prompt += ", " + options['gender']
+    if options.get('hair') is not None: 
+        prompt += ", " + options['hair']
     if options.get('accessories') and len(options['accessories']) != 0: 
         prompt += ", " + ", ".join(options['accessories'])
 
-    negative_prompt = 'nsfw'
-    strength = 0.75
+    list_prompt = []
+    if options.get('emotion') is not None and len(options['emotion']) != 0:
+        for each in options['emotion']:
+            new_prompt = prompt + ", " each
+            list_prompt.append(new_prompt)
+            
+    else : list_prompt.append(prompt)
+
+    negative_prompt = 'nsfw, bad anatomy, worst quality'
+    strength = options['strength']
 
     # Open the uploaded image
     image_data = await file.read()
     init_image = Image.open(io.BytesIO(image_data))
 
-    step2_image = model.img2img(image=init_image, prompt=prompt, negative_prompt=negative_prompt, strength=strength)
-    print("Processing Real to Anime Image Successfully")
-
-    # Convert generated image to bytes
-    img_byte_arr = io.BytesIO()
-    step2_image.save(img_byte_arr, format='PNG')
-    img_byte_arr.seek(0)
-
-    return StreamingResponse(img_byte_arr, media_type="image/png")
-
-@app.post("/anime2emotion")
-async def anime2emotion(file: UploadFile, selected_emotions: str = Form(...)):
-    selected_emotions = json.loads(option_json) # example: value : ['sad']
-    if len(selected_emotions['value']) == 0 : selected_emotions['value'] = ['happy'] # Default value is happy
+    res = []
+    for prompt in list_prompt:
+        # Generate Image
+        step2_image = model.img2img(image=init_image, prompt=prompt, negative_prompt=negative_prompt, strength=strength)
+        # Convert generated image to bytes
+        img_byte_arr = io.BytesIO()
+        step2_image.save(img_byte_arr, format='PNG')
+        img_byte_arr.seek(0)
+        res.append(StreamingResponse(img_byte_arr, media_type="image/png"))
         
-    prompt = "best_quality"
-    prompt += ", " + ", ".join(selected_emotions['value'])
-    
-    content = await file.read()
-    init_image = Image.open(io.BytesIO(content))
-
-    negative_prompt = 'nsfw'
-    strength = 0.75
-
-    generated_image = model.img2img(image=init_image, prompt=prompt, negative_prompt=negative_prompt, strength=strength)
-    print("Adding Emotion to Anime Image Successfully")
-
-    # Convert generated image to bytes
-    img_byte_arr = io.BytesIO()
-    generated_image.save(img_byte_arr, format='PNG')
-    img_byte_arr.seek(0)
-
-    return StreamingResponse(img_byte_arr, media_type="image/png")
+    print("Processing Real to Anime Image Successfully")
+    return res
 
 if __name__ == "__main__":
     import uvicorn
