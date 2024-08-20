@@ -9,6 +9,7 @@ import { InputTextarea } from "primereact/inputtextarea";
 
 const Step4 = () => {
     const [activeIndex, setActiveIndex] = useState<number>(3);
+    const [value, setValue] = useState('');
     const items: MenuItem[] = [
         {
             label: 'Step 1'
@@ -29,6 +30,10 @@ const Step4 = () => {
 
     const router = useRouter();
     const NextClick = async () => {
+        const prompt = {
+            value: value
+        };
+        console.log(JSON.stringify(prompt))
         router.push('step5');
     };
     const BackClick = async () => {
@@ -44,6 +49,7 @@ const Step4 = () => {
                 <div className="card">
                     <h5>Give your prompt</h5>
                     <InputTextarea
+                        value={value} onChange={(e) => setValue(e.target.value)}
                         placeholder="Your Message"
                         rows={6}
                         cols={30}

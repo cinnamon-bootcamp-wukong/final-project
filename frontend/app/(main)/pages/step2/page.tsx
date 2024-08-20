@@ -37,6 +37,30 @@ const Step2 = () => {
 
     const router = useRouter();
     const NextClick = async () => {
+        const prompt = {
+            age: radioAge,
+            gender: radioGender,
+            accessories: checkboxValue,
+        };
+        console.log(JSON.stringify(prompt))
+        // try {
+        //     const response = await fetch('https://your-api-endpoint.com/submit', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //         },
+        //         body: JSON.stringify(prompt),
+        //     });
+        //     if (response.ok) {
+        //         const data = await response.json();
+        //         console.log('Success:', data);
+        //         router.push('step3'); 
+        //     } else {
+        //         console.error('Error:', response.statusText);
+        //     }
+        // } catch (error) {
+        //     console.error('Error:', error);
+        // }
         router.push('step3');
     };
     const BackClick = async () => {
