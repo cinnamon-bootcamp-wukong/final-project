@@ -7,7 +7,10 @@ from typing import Tuple
 
 
 class AnimePortaraitsDataset(Dataset):
-    def __init__(self, parquet_file: str, train:bool=True) -> None:
+    def __init__(self, parquet_file: str, train: bool = True) -> None:
+        '''
+        Dataset for portrait images crawled from Pixiv, with DreamBooth technique applied (trigger: `pixivvv`)
+        '''
         super().__init__()
         self.imageSize = 256
         self.transform = T.Compose(
@@ -28,7 +31,7 @@ class AnimePortaraitsDataset(Dataset):
     def __getitem__(self, index) -> Tuple[torch.Tensor, str]:
         record = self.data.iloc[index]
         image_path = record['id']
-        caption = record['cap']
+        caption = record['cap'] + ", pixivvv"
 
         # Open the image
         image = Image.open(image_path)
