@@ -23,8 +23,8 @@ model = SDXLModel(**cfg["model"])
 async def home():
     return {"message": "Hello World"}
 
-@app.post("/step2")
-async def step2(file: UploadFile, option_json: str = Form(...)):
+@app.post("/real2anime)
+async def real2anime(file: UploadFile, option_json: str = Form(...)):
     # Load the options from the provided JSON string
     options = json.loads(option_json)
 
@@ -34,7 +34,7 @@ async def step2(file: UploadFile, option_json: str = Form(...)):
     if options.get('gender') is not None: 
         prompt += ", " + options['gender']
     if options.get('accessories') and len(options['accessories']) != 0: 
-        prompt += ", " + options['accessories'][0]
+        prompt += ", " + ", ".join(options['accessories'])
 
     negative_prompt = 'nsfw'
     strength = 0.75
@@ -44,7 +44,7 @@ async def step2(file: UploadFile, option_json: str = Form(...)):
     init_image = Image.open(io.BytesIO(image_data))
 
     step2_image = model.img2img(image=init_image, prompt=prompt, negative_prompt=negative_prompt, strength=strength)
-    print("Image processed successfully")
+    print("Processing Real to Anime Image Successfully")
 
     # Convert generated image to bytes
     img_byte_arr = io.BytesIO()
@@ -53,17 +53,22 @@ async def step2(file: UploadFile, option_json: str = Form(...)):
 
     return StreamingResponse(img_byte_arr, media_type="image/png")
 
-@app.post("/step4")
-async def step4(file: UploadFile):
+@app.post("/anime2emotion")
+async def anime2emotion(file: UploadFile, selected_emotions: str = Form(...)):
+    selected_emotions = json.loads(option_json) # example: value : ['sad']
+    if len(selected_emotions['value']) == 0 : selected_emotions['value'] = ['happy'] # Default value is happy
+        
+    prompt = "best_quality"
+    prompt += ", " + ", ".join(selected_emotions['value'])
+    
     content = await file.read()
     init_image = Image.open(io.BytesIO(content))
 
-    prompt = "best_quality, "
     negative_prompt = 'nsfw'
     strength = 0.75
 
     generated_image = model.img2img(image=init_image, prompt=prompt, negative_prompt=negative_prompt, strength=strength)
-    print("Image processed successfully")
+    print("Adding Emotion to Anime Image Successfully")
 
     # Convert generated image to bytes
     img_byte_arr = io.BytesIO()
