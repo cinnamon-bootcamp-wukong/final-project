@@ -46,18 +46,20 @@ class SDXLModel:
         self.pipeline: StableDiffusionXLImg2ImgPipeline = (
             StableDiffusionXLImg2ImgPipeline.from_pretrained(
                 model_name_or_path, torch_dtype=torch.float16
-            ).to('cuda')
+            )
         )
+        if torch.cuda.is_available():
+            self.pipeline.to("cuda")
 
         # SD components
-        self.unet: UNet2DConditionModel = self.pipeline.unet
+        # self.pipeline.unet: UNet2DConditionModel = self.pipeline.unet
         self.vae: AutoencoderKL = self.pipeline.vae
         self.vae.force_upcast = False
 
         self.noise_scheduler: EulerDiscreteScheduler = self.pipeline.scheduler
 
         # freeze all components and prepare for lora
-        self.unet.requires_grad_(False)
+        self.pipeline.unet.requires_grad_(False)
         self.vae.requires_grad_(False)
         self.pipeline.text_encoder.requires_grad_(False)
         self.pipeline.text_encoder_2.requires_grad_(False)
@@ -77,10 +79,10 @@ class SDXLModel:
                 init_lora_weights="gaussian",
                 target_modules=["q_proj", "k_proj", "v_proj", "out_proj"],
             )
-            self.unet.add_adapter(self.lora_config)
+            self.pipeline.unet.add_adapter(self.lora_config)
             self.pipeline.text_encoder.add_adapter(self.text_lora_config)
             self.pipeline.text_encoder_2.add_adapter(self.text_lora_config)
-        cast_training_params(self.unet)
+        cast_training_params(self.pipeline.unet)
         cast_training_params(self.pipeline.text_encoder)
         cast_training_params(self.pipeline.text_encoder_2)
 
@@ -172,7 +174,7 @@ class SDXLModel:
         add_time_ids = torch.cat([self.compute_time_ids()] * images.shape[0])
 
         noised_latent, timesteps, noise = self.add_noise(latent)
-        predicted_noise = self.unet.forward(
+        predicted_noise = self.pipeline.unet.forward(
             noised_latent,
             timesteps,
             encoder_hidden_states=conditioning.cuda(),
@@ -208,7 +210,7 @@ class SDXLModel:
         """
         if optimizer_class == torch.optim.SGD:
             self.unet_optimizer = optimizer_class(
-                self.unet.parameters(), lr=unet_lr, weight_decay=weight_decay
+                self.pipeline.unet.parameters(), lr=unet_lr, weight_decay=weight_decay
             )
             self.text_optimizer = optimizer_class(
                 itertools.chain(
@@ -220,7 +222,7 @@ class SDXLModel:
             )
         else:
             self.unet_optimizer = optimizer_class(
-                self.unet.parameters(), lr=unet_lr, betas=betas, weight_decay=weight_decay
+                self.pipeline.unet.parameters(), lr=unet_lr, betas=betas, weight_decay=weight_decay
             )
             self.text_optimizer = optimizer_class(
                 itertools.chain(
@@ -266,7 +268,7 @@ class SDXLModel:
             os.mkdir("checkpoints")
         self.pipeline.save_lora_weights(
             "checkpoints",
-            convert_state_dict_to_diffusers(get_peft_model_state_dict(self.unet)),
+            convert_state_dict_to_diffusers(get_peft_model_state_dict(self.pipeline.unet)),
             convert_state_dict_to_diffusers(get_peft_model_state_dict(self.pipeline.text_encoder)),
             convert_state_dict_to_diffusers(
                 get_peft_model_state_dict(self.pipeline.text_encoder_2)
