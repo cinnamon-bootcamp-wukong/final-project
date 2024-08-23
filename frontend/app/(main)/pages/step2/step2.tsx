@@ -20,7 +20,7 @@ const Step2: React.FC<step2Prob> = ({setStep, setBool}) => {
     const [checkboxValue, setCheckboxValue] = useState<string[]>([]);
     const [checkboxEmote, setCheckboxEmote] = useState<string[]>([]);
     const [radioHair, setRadioHair] = useState<string | null>(null);
-    const [value, setValue] = useState<number>(0.75); 
+    const [value, setValue] = useState<number>(0.75);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let inputValue = parseFloat(e.target.value);
@@ -148,17 +148,17 @@ const Step2: React.FC<step2Prob> = ({setStep, setBool}) => {
             <div className='col-12'>
                 <div className="flex justify-content-center gap-2">
                     <Tooltip target=".back" content="Back to previous step" position="top" />
-                    <Button 
-                        label="Back" 
-                        className="back" 
-                        style={{ margin: '0.25em 0.25em', width: '150px' }} 
+                    <Button
+                        label="Back"
+                        className="back"
+                        style={{ margin: '0.25em 0.25em', width: '150px' }}
                         onClick={BackClick}
                     />
                     <Tooltip target=".next" content="Next step" position="top" />
-                    <Button 
-                        label="Next" 
-                        className="next" 
-                        style={{ margin: '0.25em 0.25em', width: '150px' }} 
+                    <Button
+                        label="Next"
+                        className="next"
+                        style={{ margin: '0.25em 0.25em', width: '150px' }}
                         onClick={NextClick}
                     />
                 </div>

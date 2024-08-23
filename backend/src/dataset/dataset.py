@@ -7,7 +7,7 @@ from typing import Tuple
 
 
 class AnimePortaraitsDataset(Dataset):
-    def __init__(self, parquet_file: str, train:bool=True) -> None:
+    def __init__(self, parquet_file: str, train: bool = True) -> None:
         super().__init__()
         self.imageSize = 256
         self.transform = T.Compose(

@@ -7,7 +7,7 @@ import { MenuItem } from 'primereact/menuitem';
 import { Image } from 'primereact/image';
 import { Button } from 'primereact/button';
 import { Tooltip } from 'primereact/tooltip';
-import { Toast } from 'primereact/toast';  
+import { Toast } from 'primereact/toast';
 
 interface step1Prob {
     setStep: React.Dispatch<React.SetStateAction<number>>;
@@ -28,14 +28,14 @@ const Step1: React.FC<step1Prob> = ({setStep}) => {
     }
 
     const [previewUrl, setPreviewUrl] = useState('/demo/images/galleria/upload.png');
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);  
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isFace, setIsFace] = useState<boolean>(false);
-    const [tmpFile, setTmpFile] = useState<File | null>(null);  
+    const [tmpFile, setTmpFile] = useState<File | null>(null);
 
     const handleUploadClick = () => {
-        if (fileInputRef.current) {  
-            fileInputRef.current.click();  
+        if (fileInputRef.current) {
+            fileInputRef.current.click();
         }
     };
 
@@ -77,8 +77,8 @@ const Step1: React.FC<step1Prob> = ({setStep}) => {
                 return;
             }
             const fileUrl = URL.createObjectURL(tmpFile);
-            setPreviewUrl(fileUrl);  
-            setSelectedFile(tmpFile);  
+            setPreviewUrl(fileUrl);
+            setSelectedFile(tmpFile);
             //sessionStorage.setItem('uploadedImageUrl', fileUrl);
         }
     }, [tmpFile]);
@@ -102,7 +102,7 @@ const Step1: React.FC<step1Prob> = ({setStep}) => {
             showError()
         }
     };
-    
+
     const [activeIndex, setActiveIndex] = useState<number>(0);
     const items: MenuItem[] = [
         {
@@ -118,7 +118,7 @@ const Step1: React.FC<step1Prob> = ({setStep}) => {
     return (
         <div>
             <Toast ref={toast} />
-            
+
             <div className="grid">
                 <div className="md:col-12">
                         <Steps model={items} activeIndex={activeIndex} onSelect={(e) => setActiveIndex(e.index)} />
@@ -126,7 +126,7 @@ const Step1: React.FC<step1Prob> = ({setStep}) => {
                 <div className="col-12">
                     <div className="card">
                         <h5>Upload your image</h5>
-                        
+
                         <div className="flex justify-content-center">
                             <Image src={previewUrl} width="280" />
                         </div>
@@ -134,7 +134,7 @@ const Step1: React.FC<step1Prob> = ({setStep}) => {
 
                     <div className="flex justify-content-center gap-2">
                         <Tooltip target=".upload" content="Upload your face image" position="top" />
-                        <Button 
+                        <Button
                             label="Upload"
                             className="upload"
                             style={{ margin: '0.25em 0.25em', width: '150px' }}
@@ -143,16 +143,16 @@ const Step1: React.FC<step1Prob> = ({setStep}) => {
                         <input
                             type="file"
                             ref={fileInputRef}
-                            style={{ display: 'none' }}  
-                            accept="image/*"  
-                            onChange={handleFileChange}  
+                            style={{ display: 'none' }}
+                            accept="image/*"
+                            onChange={handleFileChange}
                         />
                         <Tooltip target=".next" content="Next step" position="top" />
-                        <Button 
+                        <Button
                             label="Next"
                             className='next'
                             style={{ margin: '0.25em 0.25em', width: '150px' }}
-                            onClick={handleNextClick}  
+                            onClick={handleNextClick}
                         />
                     </div>
 

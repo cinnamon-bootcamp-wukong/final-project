@@ -14,7 +14,10 @@ with open("src/training_configs.yaml") as file:
 
 # Initialize FastAPI app
 app = FastAPI()
-face_model = face_model.FaceDetector(prototxt_path = "src/face_dect/deploy.prototxt", model_path = "src/face_dect/res10_300x300_ssd_iter_140000.caffemodel")
+face_model = face_model.FaceDetector(
+    prototxt_path="src/face_dect/deploy.prototxt",
+    model_path="src/face_dect/res10_300x300_ssd_iter_140000.caffemodel",
+)
 
 # Configure CORS
 origins = [
@@ -31,16 +34,18 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
+
 @app.get("/")
 async def home():
     return {"message": "Hello World"}
+
 
 @app.post("/face_dect/")
 async def faceDect(file: UploadFile):
     image_data = await file.read()
     np_img = np.frombuffer(image_data, np.uint8)
     value = face_model.detect_faces(np_img)
-    return {"is_face" : bool(value)}
+    return {"is_face": bool(value)}
 
 
 @app.post("/real2anime/")
@@ -88,6 +93,8 @@ async def real2anime(file: UploadFile, option_json: str = Form(...)):
 
     return {"images": images_base64}
 
+
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="127.0.0.1", port=8000)

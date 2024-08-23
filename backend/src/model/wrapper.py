@@ -71,7 +71,7 @@ class SDXLModel:
 
             self.unet.add_adapter(self.lora_config)
         cast_training_params(self.unet)
-            
+
         self.configure_optimization_scheme()
         self.console = Console()
 
@@ -229,7 +229,6 @@ class SDXLModel:
         """
         return torch.utils.data.DataLoader(dataset, batch_size, shuffle=train, drop_last=drop_last)
 
-
     def save_checkpoint(self):
         print = self.console.print
         print("Saving checkpoint...")
@@ -239,7 +238,6 @@ class SDXLModel:
             "checkpoints", convert_state_dict_to_diffusers(get_peft_model_state_dict(self.unet))
         )
         print("Checkpoint saved")
-        
 
     @torch.cuda.amp.autocast(dtype=torch.float16)
     def train_1epoch(self, dataloader: torch.utils.data.DataLoader, epoch: int, total_epochs: int):
@@ -329,9 +327,13 @@ class SDXLModel:
             `drop_last`: if you want to drop the last batch for each epoch. Useful when used with `torch.compile` where usually static computation graphs are used.
             `epochs`: number of epochs to train
         """
-        loss_min = 99.
-        train_dataloader = self.configure_dataloader(train_dataset, batch_size=batch_size, drop_last=drop_last)
-        val_dataloader = self.configure_dataloader(val_dataset, batch_size=batch_size, drop_last=drop_last, train=False)
+        loss_min = 99.0
+        train_dataloader = self.configure_dataloader(
+            train_dataset, batch_size=batch_size, drop_last=drop_last
+        )
+        val_dataloader = self.configure_dataloader(
+            val_dataset, batch_size=batch_size, drop_last=drop_last, train=False
+        )
         for i in range(epochs):
             self.train_1epoch(train_dataloader, i, epochs)
             loss = self.eval(val_dataloader, i, epochs)
@@ -339,8 +341,9 @@ class SDXLModel:
                 loss = loss_min
                 self.save_checkpoint()
 
-
-    def img2img(self, image: Image.Image, prompt: str, strength: float, **pipeline_kwargs) -> Image.Image:
+    def img2img(
+        self, image: Image.Image, prompt: str, strength: float, **pipeline_kwargs
+    ) -> Image.Image:
         """
         Image modification using SDXL
 
@@ -355,5 +358,7 @@ class SDXLModel:
         Returns:
             A PIL `Image`, the modifucation result.
         """
-        x = self.pipeline.__call__(prompt, image=image, strength=strength, **pipeline_kwargs, return_dict=False)
+        x = self.pipeline.__call__(
+            prompt, image=image, strength=strength, **pipeline_kwargs, return_dict=False
+        )
         return x[0][0]

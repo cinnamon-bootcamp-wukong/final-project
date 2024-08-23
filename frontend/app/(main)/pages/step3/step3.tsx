@@ -29,7 +29,7 @@ const Step3: React.FC<step3Prob> = ({setStep, pass2Step}) => {
             console.log(tmp)
         }
     }, [pass2Step]);
-    
+
     useEffect(() => {
         const readCache = async () => {
             const storedImageUrl = sessionStorage.getItem('uploadedImageUrl');
@@ -60,30 +60,30 @@ const Step3: React.FC<step3Prob> = ({setStep, pass2Step}) => {
             console.error('No file available to send');
             return;
         }
-    
+
         const formData = new FormData();
         formData.append('file', file);
         formData.append('option_json', JSON.stringify(prompt));
-    
+
         try {
             const response = await fetch('http://127.0.0.1:8000/real2anime/', {
                 method: 'POST',
                 body: formData,
             });
-    
+
             if (!response.ok) {
                 console.error('HTTP error:', response.status);
                 setLoading(false);
                 return;
             }
-    
+
             const data: Real2AnimeResponse = await response.json(); // Type the response
             const imagesBase64 = data.images;
-    
+
             const imageUrls = imagesBase64.map((base64String): string => {
                 return `data:image/png;base64,${base64String}`;
             });
-    
+
             // Display each image in the document
             imageUrls.forEach((url: string) => {
                 const img = document.createElement('img');
@@ -91,7 +91,7 @@ const Step3: React.FC<step3Prob> = ({setStep, pass2Step}) => {
             });
 
             console.log(imageUrls)
-    
+
             setImages(imageUrls);
             setLoading(false);
         } catch (error) {
@@ -133,7 +133,7 @@ const Step3: React.FC<step3Prob> = ({setStep, pass2Step}) => {
                 <div className="md:col-12">
                     <Steps model={items} activeIndex={activeIndex} onSelect={(e) => setActiveIndex(e.index)} />
                 </div>
-    
+
                 <div className="card" style={{ display: loading ? 'block' : 'none' }}>
                     <h5>Waiting for processing...</h5>
                     <div className="card flex justify-content-center">
@@ -148,16 +148,16 @@ const Step3: React.FC<step3Prob> = ({setStep, pass2Step}) => {
                         <div className="grid">
                             {images.map((url, index) => (
                                 <div className='col-12 md:col-4' key={index} style={{ position: 'relative', marginBottom: '10px' }}>
-                                    <Image 
-                                        src={url} 
+                                    <Image
+                                        src={url}
                                         width="100%"
                                         preview
                                     />
-                                    <Button 
-                                        icon="pi pi-download" 
-                                        className="p-button-rounded p-button-secondary" 
-                                        onClick={() => handleDownload(url)} 
-                                        style={{ position: 'absolute', top: '10px', right: '10px' }} 
+                                    <Button
+                                        icon="pi pi-download"
+                                        className="p-button-rounded p-button-secondary"
+                                        onClick={() => handleDownload(url)}
+                                        style={{ position: 'absolute', top: '10px', right: '10px' }}
                                         aria-label="Download"
                                     />
                                 </div>
@@ -167,17 +167,17 @@ const Step3: React.FC<step3Prob> = ({setStep, pass2Step}) => {
                 </div>
                 <div className="flex justify-content-center gap-2">
                     <Tooltip target=".Finish" content="Back to main page" position="top" />
-                    <Button 
-                        label="Finish" 
-                        className="Finish" 
+                    <Button
+                        label="Finish"
+                        className="Finish"
                         severity="success"
-                        style={{ margin: '0.25em 0.25em', width: '150px' }} 
+                        style={{ margin: '0.25em 0.25em', width: '150px' }}
                         onClick={HomeClick}
                     />
                 </div>
             </div>
         </div>
-    );    
+    );
 };
 
 export default Step3;
