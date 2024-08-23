@@ -14,7 +14,7 @@ def test_gdown():
     except FileExistsError:
         pass
 
-    gdown.download(id, "checkpoints/pytorch_lora_weights.safetensors")
+    gdown.download(id=id, output="checkpoints/pytorch_lora_weights.safetensors")
 
     assert os.path.isfile("checkpoints/pytorch_lora_weights.safetensors")
 
@@ -26,6 +26,6 @@ def test_model():
     except FileExistsError:
         pass
 
-    gdown.download(id, "checkpoints/pytorch_lora_weights.safetensors")
+    gdown.download(id=id, output="checkpoints/pytorch_lora_weights.safetensors")
 
     SDXLModel(lora_weights="checkpoints")
