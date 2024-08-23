@@ -8,5 +8,6 @@ with open("training_configs.yaml") as file:
 
 
 model = SDXLModel(**cfg["model"])
-dataset = AnimePortaraitsDataset(cfg['data']['parquet_file'])
-model.finetune(dataset, cfg['data']['batch_size'], cfg['data']['drop_last'], cfg['epochs'])
+train_dataset = AnimePortaraitsDataset(cfg['data']['parquet_file'])
+val_dataset = AnimePortaraitsDataset(cfg['data']['parquet_file'], train=False)
+model.finetune(train_dataset, val_dataset, cfg['data']['batch_size'], cfg['data']['drop_last'], cfg['epochs'])

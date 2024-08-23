@@ -6,4 +6,4 @@ data:
   parquet_file: /home/wukong-team/datasets/captions_2.parquet
   batch_size: 8
   drop_last: false
-epochs: 10
+epochs: 50
