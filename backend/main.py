@@ -3,6 +3,7 @@ from starlette.middleware.cors import CORSMiddleware
 import numpy as np
 from PIL import Image
 from src.face_dect import face_model
+from src.model.wrapper import SDXLModel
 import json
 import yaml
 import io
@@ -14,6 +15,7 @@ with open("src/training_configs.yaml") as file:
 
 # Initialize FastAPI app
 app = FastAPI()
+model = SDXLModel(**cfg["model"])
 face_model = face_model.FaceDetector(
     prototxt_path="src/face_dect/deploy.prototxt",
     model_path="src/face_dect/res10_300x300_ssd_iter_140000.caffemodel",
@@ -97,7 +99,7 @@ async def real2anime(file: UploadFile, option_json: str = Form(...)):
     images_base64 = []
 
     for idx, prompt in enumerate(list_prompt):
-        step2_image = Image.open("arya.png")  # Replace with your actual image generation logic
+        step2_image = model.img2img(image=init_image, prompt=prompt, negative_prompt=negative_prompt, strength=strength)
 
         # Convert image to bytes
         img_byte_arr = io.BytesIO()
