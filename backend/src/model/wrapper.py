@@ -43,8 +43,10 @@ class SDXLModel:
         self.pipeline: StableDiffusionXLImg2ImgPipeline = (
             StableDiffusionXLImg2ImgPipeline.from_pretrained(
                 model_name_or_path, torch_dtype=torch.float16
-            ).to('cuda')
+            )
         )
+        if torch.cuda.is_available():
+            self.pipeline.to("cuda")
 
         # SD components
         self.unet: UNet2DConditionModel = self.pipeline.unet
