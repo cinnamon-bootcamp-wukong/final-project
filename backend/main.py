@@ -21,8 +21,8 @@ face_model = face_model.FaceDetector(
 
 # Configure CORS
 origins = [
-    "http://0.0.0.0",
-    "http://0.0.0.0:3000",
+    "http://35.163.120.104",
+    "http://35.163.120.104:3000",
 ]
 
 app.add_middleware(
