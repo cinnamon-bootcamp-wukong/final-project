@@ -66,7 +66,7 @@ const Step3: React.FC<step3Prob> = ({setStep, pass2Step}) => {
         formData.append('option_json', JSON.stringify(prompt));
 
         try {
-            const response = await fetch('http://127.0.0.1:8000/real2anime/', {
+            const response = await fetch('http://35.163.120.104:8000/real2anime/', {
                 method: 'POST',
                 body: formData,
             });

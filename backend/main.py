@@ -21,8 +21,8 @@ face_model = face_model.FaceDetector(
 
 # Configure CORS
 origins = [
-    "http://localhost",
-    "http://localhost:3000",
+    "http://35.163.120.104",
+    "http://35.163.120.104:3000",
 ]
 
 app.add_middleware(
@@ -112,4 +112,4 @@ async def real2anime(file: UploadFile, option_json: str = Form(...)):
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="35.163.120.104", port=8000)
