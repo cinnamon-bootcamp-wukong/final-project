@@ -100,7 +100,9 @@ async def real2anime(file: UploadFile, option_json: str = Form(...)):
 
     for idx, prompt in enumerate(list_prompt):
         print(f'Prompt: {prompt}')
-        step2_image = model.img2img(image=init_image, prompt=prompt, negative_prompt=negative_prompt, strength=strength)
+        step2_image = model.img2img(
+            image=init_image, prompt=prompt, negative_prompt=negative_prompt, strength=strength
+        )
 
         # Convert image to bytes
         img_byte_arr = io.BytesIO()
