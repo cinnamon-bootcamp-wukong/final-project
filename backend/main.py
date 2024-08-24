@@ -85,7 +85,7 @@ async def real2anime(file: UploadFile, option_json: str = Form(...)):
         if options.get('accessories') and len(options['accessories']) != 0:
             list_prompt[idx] += ", " + ", ".join(options['accessories'].lower())
 
-        list_prompt[idx] += ", masterpiece"
+        list_prompt[idx] += ", masterpiece, best quality"
 
         if options.get('age') is not None:
             list_prompt[idx] += ", " + options['age'] + " year olds"
