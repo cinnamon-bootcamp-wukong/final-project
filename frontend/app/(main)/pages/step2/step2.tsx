@@ -127,7 +127,7 @@ const Step2: React.FC<step2Prob> = ({setStep, setBool}) => {
 
                     <h6>Emote</h6>
                     <div className="grid">
-                        {['Smile', 'Sad', 'Angry', 'Tired', 'Surprise', 'Cute'].map((emote) => (
+                        {['Smile', 'Sad', 'Angry', 'Tired', 'Surprise', 'Adorable'].map((emote) => (
                             <div key={emote} className="col-12 md:col-4">
                                 <div className="field-checkbox">
                                     <Checkbox inputId={`emote-${emote}`} name="emote" value={emote} checked={checkboxEmote.includes(emote)} onChange={onCheckboxEmote} />
