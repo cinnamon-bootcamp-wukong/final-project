@@ -99,8 +99,6 @@ async def real2anime(file: UploadFile, option_json: str = Form(...)):
 
     images_base64 = []
 
-    torch.manual_seed(42)
-
     for idx, prompt in enumerate(list_prompt):
         print(f'Prompt: {prompt}')
         step2_image = model.img2img(
