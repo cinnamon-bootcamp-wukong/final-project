@@ -49,7 +49,7 @@ const Step1: React.FC<step1Prob> = ({setStep}) => {
         const formData = new FormData();
         formData.append('file', file);
         try {
-            const response = await fetch('http://0.0.0.0:8000/face_dect/', {
+            const response = await fetch('http://35.163.120.104:8000/face_dect/', {
                 method: 'POST',
                 body: formData,
             });
