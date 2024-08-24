@@ -21,8 +21,8 @@ face_model = face_model.FaceDetector(
 
 # Configure CORS
 origins = [
-    "http://35.163.120.104",
-    "http://35.163.120.104:3000",
+    "http://0.0.0.0",
+    "http://0.0.0.0:3000",
 ]
 
 app.add_middleware(
@@ -55,36 +55,38 @@ async def real2anime(file: UploadFile, option_json: str = Form(...)):
 
     # Build the prompt based on options
     prompt = ""
-    
+
     if options.get('gender') is not None:
         if options['gender'] == "male":
-          prompt += "1boy"
-        else : prompt += "1girl"
-    
+            prompt += "1boy"
+        else:
+            prompt += "1girl"
+
     if options.get('hair') is not None:
         prompt += ", " + options['hair'] + " hair"
-    
+
     prompt += ", looking at viewer"
-    
+
     list_prompt = []
     if options.get('emote') is not None and len(options['emote']) != 0:
         for each in options['emote']:
             new_prompt = prompt + ", " + each
             list_prompt.append(new_prompt)
-    
-    else : list_prompt.append(prompt)
-    
+
+    else:
+        list_prompt.append(prompt)
+
     for idx in range(len(list_prompt)):
-      list_prompt[idx] += ", upper body"
-    
-      if options.get('accessories') and len(options['accessories']) != 0:
-        list_prompt[idx] += ", " + ", ".join(options['accessories'])
-    
-      list_prompt[idx] += ", masterpiece"
-    
-      if options.get('age') is not None:
-          list_prompt[idx] += ", " + options['age'] + " year olds"
-    
+        list_prompt[idx] += ", upper body"
+
+        if options.get('accessories') and len(options['accessories']) != 0:
+            list_prompt[idx] += ", " + ", ".join(options['accessories'])
+
+        list_prompt[idx] += ", masterpiece"
+
+        if options.get('age') is not None:
+            list_prompt[idx] += ", " + options['age'] + " year olds"
+
     negative_prompt = 'nsfw'
     strength = options['strength']
 
@@ -112,4 +114,4 @@ async def real2anime(file: UploadFile, option_json: str = Form(...)):
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="35.163.120.104", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)

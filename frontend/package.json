@@ -3,7 +3,7 @@
     "version": "10.1.0",
     "private": true,
     "scripts": {
-        "dev": "HOST=35.163.120.104 PORT=3000 next dev",
+        "dev": "HOST=0.0.0.0 PORT=3000 next dev",
         "build": "next build",
         "start": "next start",
         "format": "prettier --write \"{app,demo,layout,types}/**/*.{js,ts,tsx,d.ts}\"",
