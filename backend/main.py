@@ -59,20 +59,20 @@ async def real2anime(file: UploadFile, option_json: str = Form(...)):
     prompt = ""
 
     if options.get('gender') is not None:
-        if options['gender'] == "male":
+        if options['gender'] == "Male":
             prompt += "1boy"
         else:
             prompt += "1girl"
 
     if options.get('hair') is not None:
-        prompt += ", " + options['hair'] + " hair"
+        prompt += ", " + options['hair'].lower() + " hair"
 
     prompt += ", looking at viewer"
 
     list_prompt = []
     if options.get('emote') is not None and len(options['emote']) != 0:
         for each in options['emote']:
-            new_prompt = prompt + ", " + each
+            new_prompt = prompt + ", " + each.lower()
             list_prompt.append(new_prompt)
 
     else:
@@ -82,7 +82,7 @@ async def real2anime(file: UploadFile, option_json: str = Form(...)):
         list_prompt[idx] += ", upper body"
 
         if options.get('accessories') and len(options['accessories']) != 0:
-            list_prompt[idx] += ", " + ", ".join(options['accessories'])
+            list_prompt[idx] += ", " + ", ".join(options['accessories'].lower())
 
         list_prompt[idx] += ", masterpiece"
 
@@ -99,6 +99,7 @@ async def real2anime(file: UploadFile, option_json: str = Form(...)):
     images_base64 = []
 
     for idx, prompt in enumerate(list_prompt):
+        print(f'Prompt: {prompt}')
         step2_image = model.img2img(image=init_image, prompt=prompt, negative_prompt=negative_prompt, strength=strength)
 
         # Convert image to bytes
