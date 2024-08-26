@@ -6,6 +6,14 @@ Create your own anime-style avatars with different assets of your choice.
 
 ![image](https://github.com/user-attachments/assets/a95bf917-8dd0-4da7-8355-15198b129b94)
 
+### Contributors
+|            Name               | Profile
+|----------------|-------------------------------
+|Đỗ Nguyễn Duy Hoàng | [@hoang1645](https://github.com/hoang1645)
+|Nguyễn Hải Nam | [@NamSee04](https://github.com/NamSee04)
+|Mai Anh Quan | [@Qcymaq](https://github.com/Qcymaq)
+|Từ Lễ Huy | [@21522173huy](https://github.com/21522173huy)
+
 ## Overview
 We use [Animagine-XL 3.0](https://huggingface.co/Linaqruf/animagine-xl-3.0), which is a diffusion model fine-tuned from Stable Diffusion XL, to generate anime-style portrait images from human faces as the backbone.
 
@@ -64,6 +72,17 @@ We have provided the training script and configuration at `backend/src`. Modify 
 cd backend/src
 python train.py
 ```
+
+## Demo
+
+**Step 1:** Upload your face image:
+![Upload Image](assets/gifs/gif1.gif)
+
+**Step 2:** Select your options:
+![Choose Options](assets/gifs/gif2.gif)
+
+**Step 3:** Wait for processing and view your results:
+![View Results](assets/gifs/gif3.gif)
 
 ## Future works
 As this is a fine-tuned SDXL, and we used the raw implementation of Hugging Face `diffusers`, image-to-image tasks are gonna be slow (~19s on T4 with strength 6.0-8.5, which covers the range of strengths we use in the app). If we can find the time, here is what we want to do to speed up the app:
