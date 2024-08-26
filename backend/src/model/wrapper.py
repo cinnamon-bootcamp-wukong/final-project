@@ -24,6 +24,25 @@ from PIL import Image
 
 
 class SDXLModel:
+    """
+    A wrapper class for the Stable Diffusion XL (SDXL) model, which supports fine-tuning using LoRA (Low-Rank Adaptation).
+
+    Attributes:
+        pipeline (StableDiffusionXLImg2ImgPipeline): The Stable Diffusion XL image-to-image pipeline.
+        unet (UNet2DConditionModel): The U-Net model used for image generation.
+        vae (AutoencoderKL): The Variational Autoencoder used for encoding and decoding images.
+        noise_scheduler (EulerDiscreteScheduler): The scheduler for adding noise to the latent space.
+        lora_config (LoraConfig, optional): Configuration for LoRA adaptation.
+        optimizer (torch.optim.Optimizer): The optimizer for training the model.
+        lr_scheduler (torch.optim.lr_scheduler.LRScheduler): The learning rate scheduler.
+        console (Console): The console for displaying progress and messages.
+
+    Args:
+        model_name_or_path (str): The name of the pre-trained model from HF Hub or a path to a local model checkpoint. Default is 'Linaqruf/animagine-xl-3.0'.
+        lora_weights (str, optional): Path to pre-trained LoRA weights. If not provided, a new LoRA configuration will be created.
+        lora_rank (int, optional): The rank for LoRA. Default is 8.
+        lora_alpha (int, optional): The alpha parameter for LoRA. Default is 32.
+    """
     def __init__(
         self,
         model_name_or_path: str = 'Linaqruf/animagine-xl-3.0',
@@ -78,7 +97,15 @@ class SDXLModel:
         self.console = Console()
 
     def encode_text(self, prompt: str | List[str]) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Encode the prompts using the model text encoders."""
+        """
+        Encode text prompts using the model's text encoders.
+
+        Args:
+            prompt (str | List[str]): A single prompt or a list of prompts to encode.
+
+        Returns:
+            Tuple[torch.Tensor, torch.Tensor]: A tuple containing the encoded text embeddings and the pooled text embeddings.
+        """
         prompt_embeds_list = []
         text_encoders = [self.pipeline.text_encoder, self.pipeline.text_encoder_2]
         tokenizers = [self.pipeline.tokenizer, self.pipeline.tokenizer_2]
@@ -109,6 +136,16 @@ class SDXLModel:
 
     @staticmethod
     def compute_time_ids(original_size=(256, 256), crops_coords_top_left=(0, 0)):
+        """
+        Compute additional time IDs for the latent codes.
+
+        Args:
+            original_size (Tuple[int, int]): Size of the original image.
+            crops_coords_top_left (Tuple[int, int]): Coordinates of the top-left crop.
+
+        Returns:
+            torch.Tensor: Tensor containing the computed time IDs.
+        """
         # Adapted from pipeline.StableDiffusionXLPipeline._get_add_time_ids
         target_size = (256, 256)
         add_time_ids = list(original_size + crops_coords_top_left + target_size)
