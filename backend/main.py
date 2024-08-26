@@ -39,11 +39,27 @@ app.add_middleware(
 
 @app.get("/")
 async def home():
+    """
+    Root endpoint that returns a simple welcome message.
+
+    Returns:
+        dict: A message indicating that the server is running.
+    """
     return {"message": "Hello World"}
 
 
 @app.post("/face_dect/")
 async def faceDect(file: UploadFile):
+    """
+    Endpoint to detect faces in an uploaded image file.
+
+    Args:
+        file (UploadFile): The uploaded image file to be processed.
+
+    Returns:
+        dict: A dictionary indicating whether a face was detected in the image.
+              The key "is_face" has a boolean value.
+    """
     image_data = await file.read()
     np_img = np.frombuffer(image_data, np.uint8)
     value = face_model.detect_faces(np_img)
@@ -52,6 +68,23 @@ async def faceDect(file: UploadFile):
 
 @app.post("/real2anime/")
 async def real2anime(file: UploadFile, option_json: str = Form(...)):
+    """
+    Endpoint to transform a real image into an anime-style image based on the provided options.
+
+    Args:
+        file (UploadFile): The uploaded image file to be transformed.
+        option_json (str): A JSON string containing the options for the transformation, including:
+                           - gender (str): "Male" or "Female"
+                           - hair (str): Hair color
+                           - emote (list[str]): facial expressions
+                           - accessories (list[str]): accessories
+                           - age (int): Age
+                           - strength (float): Transformation strength
+
+    Returns:
+        dict: A dictionary containing the generated anime-style images encoded in base64 format.
+              The key "images" holds a list of base64-encoded images.
+    """
     # Load the options from the provided JSON string
     options = json.loads(option_json)
 
