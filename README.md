@@ -1,10 +1,8 @@
-# Wukong Avatar Creator
+# AniFace
 
 This project is a part of the Cinnamon 2024 Bootcamp.
 
 Create your own anime-style avatars with different assets of your choice.
-
-![image](https://github.com/user-attachments/assets/a95bf917-8dd0-4da7-8355-15198b129b94)
 
 ### Contributors
 |            Name               | Profile
