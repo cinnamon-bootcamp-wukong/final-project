@@ -21,6 +21,7 @@ For model fine-tuning, we use LoRA as our method of parameter-efficient finetuni
 - Backend: We have tested on these versions of Python:
     - 3.10
     - 3.11 (main)
+
   3.12 should also work, if there are no unsupported packages.
 - Frontend: NodeJS version 18+ (wink wink nudge nudge) should work.
 - Hardware:
