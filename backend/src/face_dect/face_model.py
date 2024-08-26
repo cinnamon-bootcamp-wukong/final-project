@@ -10,6 +10,7 @@ class FaceDetector:
         detector (cv2.dnn_Net): The face detection model loaded from Caffe.
         confidence_threshold (float): The threshold for considering a detected face as valid.
     """
+
     def __init__(self, prototxt_path, model_path, confidence_threshold=0.75):
         """
         Initializes the FaceDetector object with a specified Caffe model.

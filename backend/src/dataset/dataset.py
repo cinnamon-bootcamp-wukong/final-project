@@ -10,7 +10,7 @@ class AnimePortaraitsDataset(Dataset):
     """
     A custom Dataset for loading and processing anime portrait images and their captions.
 
-    This dataset reads image paths and captions from a Parquet file and applies necessary 
+    This dataset reads image paths and captions from a Parquet file and applies necessary
     transformations to the images.
 
     Attributes:
@@ -18,6 +18,7 @@ class AnimePortaraitsDataset(Dataset):
         transform (torchvision.transforms.Compose): The transformations to apply to the images.
         data : The DataFrame containing the image paths and captions.
     """
+
     def __init__(self, parquet_file: str, train: bool = True) -> None:
         """
         Initializes the AnimePortaraitsDataset.
@@ -26,7 +27,7 @@ class AnimePortaraitsDataset(Dataset):
             parquet_file (str): The path to the Parquet file containing the dataset.
             train (bool, optional): Whether to use the training or evaluation split of the data.
                                     If True, use the first 20,000 samples for training.
-                                    If False, use the remaining samples for evaluation. 
+                                    If False, use the remaining samples for evaluation.
                                     Defaults to True.
 
         """

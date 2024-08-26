@@ -43,6 +43,7 @@ class SDXLModel:
         lora_rank (int, optional): The rank for LoRA. Default is 8.
         lora_alpha (int, optional): The alpha parameter for LoRA. Default is 32.
     """
+
     def __init__(
         self,
         model_name_or_path: str = 'Linaqruf/animagine-xl-3.0',
