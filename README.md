@@ -55,7 +55,7 @@ Check the app at http://localhost:3000.
 We have provided a front-to-back Dockerfile for your container needs. Just do 4 simple steps:
 - Install the NVIDIA Container Toolkit
 - Run `docker build . -t wukong-avatar-creator`
-- Run `docker run --gpus=all -p 3000:3000 wukong-avatar-creator`
+- Run `docker run --gpus=all -p 3000:3000 -p 8000:8000 wukong-avatar-creator`
 - Check the web app at `https://localhost:3000`
 
 ## Fine-tune the model yourself?
