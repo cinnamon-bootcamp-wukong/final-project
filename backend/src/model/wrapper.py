@@ -98,7 +98,6 @@ class SDXLModel:
 
     def encode_text(self, prompt: str | List[str]) -> Tuple[torch.Tensor, torch.Tensor]:
         """Encode the prompts using the model text encoders."""
-
         prompt_embeds_list = []
         text_encoders = [self.pipeline.text_encoder, self.pipeline.text_encoder_2]
         tokenizers = [self.pipeline.tokenizer, self.pipeline.tokenizer_2]
