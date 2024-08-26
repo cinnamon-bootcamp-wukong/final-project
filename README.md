@@ -67,6 +67,7 @@ python train.py
 
 ## Future works
 As this is a fine-tuned SDXL, and we used the raw implementation of Hugging Face `diffusers`, image-to-image tasks are gonna be slow (~19s on T4 with strength 6.0-8.5, which covers the range of strengths we use in the app). If we can find the time, here is what we want to do to speed up the app:
-[ ] Use `torch.compile`
-[ ] Use `tensorrt`
-[ ] Switch the VAE (`AutoencoderKL`) to its distilled version [taesd](https://github.com/madebyollin/taesd).
+
+- [ ] Use `torch.compile`
+- [ ] Use `tensorrt`
+- [ ] Switch the VAE (`AutoencoderKL`) to its distilled version [taesd](https://github.com/madebyollin/taesd).
