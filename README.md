@@ -8,9 +8,9 @@ Create your own anime-style avatars with different assets of your choice.
 |            Name               | Profile
 |----------------|-------------------------------
 |Đỗ Nguyễn Duy Hoàng | [@hoang1645](https://github.com/hoang1645)
+|Từ Lễ Huy | [@21522173huy](https://github.com/21522173huy)
 |Nguyễn Hải Nam | [@NamSee04](https://github.com/NamSee04)
 |Mai Anh Quan | [@Qcymaq](https://github.com/Qcymaq)
-|Từ Lễ Huy | [@21522173huy](https://github.com/21522173huy)
 
 ## Overview
 We use [Animagine-XL 3.0](https://huggingface.co/Linaqruf/animagine-xl-3.0), which is a diffusion model fine-tuned from Stable Diffusion XL, to generate anime-style portrait images from human faces as the backbone.
